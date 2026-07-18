@@ -20,6 +20,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -89,3 +90,9 @@ SCAN_IGNORE_DIRS = {
     'migrations', 'staticfiles', 'static', 'media', 'dist', 'build',
     '.idea', '.vscode',
 }
+STATIC_ROOT = BASE_DIR / 'staticfiles',
+STORAGES = {
+       "staticfiles": {
+           "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+       },
+   }
