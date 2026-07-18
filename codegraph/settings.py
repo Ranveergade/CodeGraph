@@ -91,7 +91,7 @@ SCAN_IGNORE_DIRS = {
     'migrations', 'staticfiles', 'static', 'media', 'dist', 'build',
     '.idea', '.vscode',
 }
-STATIC_ROOT = BASE_DIR / 'staticfiles',
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
        "staticfiles": {
            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
