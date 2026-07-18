@@ -1,0 +1,89 @@
+{% extends 'analyzer/base.html' %}
+{% load static %}
+{% block title %}{{ scan.name }} — CodeGraph{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"
+        onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/vis-network@9.1.9/standalone/umd/vis-network.min.js';"></script>
+{% endblock %}
+
+{% block content %}
+<div class="graph-page">
+
+    <div class="graph-statsbar">
+        <div class="statsbar-left">
+            <h1 class="graph-title">{{ scan.name }}</h1>
+            <span class="graph-sub">{{ scan.source_label }}</span>
+        </div>
+        <div class="statsbar-stats">
+            <div class="stat-pill"><b id="stat-files"></b>files</div>
+            <div class="stat-pill"><b id="stat-nodes"></b>nodes</div>
+            <div class="stat-pill"><b id="stat-edges"></b>edges</div>
+            <div class="stat-pill stat-pill-warn"><b id="stat-dead"></b>dead code</div>
+            <div class="stat-pill stat-pill-danger"><b id="stat-cycles"></b>circular imports</div>
+        </div>
+        <form method="post" action="{% url 'analyzer:delete_scan' scan.pk %}" onsubmit="return confirm('Delete this scan?');" class="delete-form">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-small">Delete</button>
+        </form>
+    </div>
+
+    <div class="graph-body">
+        <aside class="graph-controls">
+            <div class="control-block">
+                <h3>Search</h3>
+                <input type="text" id="search-input" placeholder="Find a node by name…">
+            </div>
+
+            <div class="control-block">
+                <h3>Node types</h3>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="file" checked><span class="dot dot-file"></span>Files</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="model" checked><span class="dot dot-model"></span>Models</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="class" checked><span class="dot dot-class"></span>Classes</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="view" checked><span class="dot dot-view"></span>Views</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="function" checked><span class="dot dot-function"></span>Functions</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="method" checked><span class="dot dot-method"></span>Methods</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="url" checked><span class="dot dot-url"></span>URL routes</label>
+                <label class="legend-row"><input type="checkbox" class="type-toggle" value="test" checked><span class="dot dot-test"></span>Tests</label>
+            </div>
+
+            <div class="control-block">
+                <h3>Edge types</h3>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="import" checked><span class="line line-import"></span>Imports</label>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="call" checked><span class="line line-call"></span>Calls</label>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="inherit" checked><span class="line line-inherit"></span>Inheritance</label>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="relation" checked><span class="line line-relation"></span>Model relations</label>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="url" checked><span class="line line-url"></span>URL routing</label>
+                <label class="legend-row"><input type="checkbox" class="edge-toggle" value="contains"><span class="line line-contains"></span>Structure (contains)</label>
+            </div>
+
+            <div class="control-block">
+                <h3>Highlight</h3>
+                <button class="btn btn-outline btn-small full-width" id="btn-highlight-dead">Highlight dead code</button>
+                <button class="btn btn-outline btn-small full-width" id="btn-highlight-cycles">Highlight circular imports</button>
+                <button class="btn btn-ghost btn-small full-width" id="btn-reset">Reset view</button>
+            </div>
+
+            <div class="control-block" id="cycles-block" style="display:none;">
+                <h3>Circular imports found</h3>
+                <div id="cycles-list"></div>
+            </div>
+        </aside>
+
+        <div class="graph-canvas-wrap">
+            <div id="network-status" class="network-status">Loading graph…</div>
+            <div id="network"></div>
+        </div>
+
+        <aside class="graph-detail" id="detail-panel">
+            <div class="detail-empty">
+                <p>Click any node to see what it is, its source, and everything
+                   it calls or is called by.</p>
+            </div>
+        </aside>
+    </div>
+</div>
+
+{{ scan.result_json|json_script:"graph-data" }}
+<script src="{% static 'analyzer/js/graph.js' %}"></script>
+{% endblock %}

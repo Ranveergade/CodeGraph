@@ -1,0 +1,64 @@
+{% extends 'analyzer/base.html' %}
+{% block title %}CodeGraph — Codebase Knowledge Graph{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>See your codebase before you read a single file.</h1>
+    <p class="hero-sub">
+        Point CodeGraph at any Django / Python project and get an interactive
+        architecture graph &mdash; URL flow, model relationships, function call graph,
+        dead code, and circular dependencies &mdash; generated automatically.
+    </p>
+</section>
+
+<section class="analyze-grid">
+    <div class="card analyze-card">
+        <h2>1. Try the sample project</h2>
+        <p>A small Django app (models, views, urls, utils) with an intentional
+           dead function and a circular import, so you can see every feature
+           of the graph in one click.</p>
+        <form method="post" action="{% url 'analyzer:analyze' %}">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="sample">
+            <button type="submit" class="btn btn-primary">Analyze sample project</button>
+        </form>
+    </div>
+
+    <div class="card analyze-card">
+        <h2>2. Upload your own project</h2>
+        <p>Zip your Django project's source (skip venv / node_modules) and
+           upload it. Everything is parsed in-memory with Python's <code>ast</code>
+           module &mdash; nothing is executed.</p>
+        <form method="post" action="{% url 'analyzer:analyze' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="source" value="upload">
+            <input type="file" name="project_zip" accept=".zip" required>
+            <button type="submit" class="btn btn-secondary">Upload &amp; analyze</button>
+        </form>
+    </div>
+</section>
+
+<section class="history-section">
+    <h2>{% if show_all %}All scans{% else %}Recent scans{% endif %}</h2>
+    {% if recent_scans %}
+    <div class="scan-list">
+        {% for scan in recent_scans %}
+        <a href="{% url 'analyzer:graph_detail' scan.pk %}" class="scan-row">
+            <div class="scan-row-main">
+                <span class="scan-name">{{ scan.name }}</span>
+                <span class="scan-meta">{{ scan.source_label }} &middot; {{ scan.created_at|date:"M d, H:i" }}</span>
+            </div>
+            <div class="scan-row-stats">
+                <span title="files">{{ scan.total_files }} files</span>
+                <span title="nodes">{{ scan.total_nodes }} nodes</span>
+                <span class="{% if scan.dead_code_count %}stat-warn{% endif %}" title="dead code">{{ scan.dead_code_count }} dead</span>
+                <span class="{% if scan.cycle_count %}stat-danger{% endif %}" title="cycles">{{ scan.cycle_count }} cycles</span>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">No scans yet &mdash; run the sample project above to get started.</p>
+    {% endif %}
+</section>
+{% endblock %}

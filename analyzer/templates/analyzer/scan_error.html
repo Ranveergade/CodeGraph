@@ -1,0 +1,15 @@
+{% extends 'analyzer/base.html' %}
+{% block title %}Scan failed — CodeGraph{% endblock %}
+{% block content %}
+<section class="hero" style="text-align:left; max-width: 900px;">
+    <h1 style="font-size:24px;">Couldn't finish analyzing "{{ name }}"</h1>
+    <p class="hero-sub">
+        The scanner hit an unexpected construct somewhere in this codebase.
+        Here's the exact Python error and where it happened — this is usually
+        a quick fix in <code>code_scanner.py</code>. Copy this and send it
+        over if you're stuck.
+    </p>
+    <div class="detail-source" style="max-height:520px; text-align:left;">{{ traceback }}</div>
+    <p style="margin-top:20px;"><a href="{% url 'analyzer:index' %}" class="btn btn-outline">&larr; Back to analyze</a></p>
+</section>
+{% endblock %}
